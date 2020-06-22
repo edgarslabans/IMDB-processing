@@ -1,5 +1,5 @@
 from selenium import webdriver
-import bs4 as bs
+from bs4 import BeautifulSoup
 import pandas as pd
 import urllib.request
 from requests import get
@@ -8,54 +8,47 @@ from tabulate import tabulate
 productName = []
 productPrice = []
 
-url = 'https://www.imdb.com/search/title/?release_date=2017&sort=num_votes,desc&page=1'
-source = urllib.request.urlopen(url).read()
-soup = bs.BeautifulSoup(source,'lxml')
+from requests import get
 
+
+url = 'http://www.imdb.com/search/title?release_date=2017&sort=num_votes,desc&page=1'
+response = get(url)
 
 html_soup = BeautifulSoup(response.text, 'html.parser')
-
-#html_soup = bs(source.text, 'html.parser')
-#type(html_soup)
-
-
-response = get(url)
-print(response.text[:500])
-
-# title of the page
-print(soup.title)
-
-# get attributes:
-print(soup.title.name)
-
-# get values:
-print(soup.title.string)
-
-# beginning navigation:
-print(soup.title.parent.name)
-
-# getting specific values:
-print(soup.p)
-
-#for h2 in soup.find_all('h2', class_ ='product-name item-title'):
-#    print(h2.text)
-
+type(html_soup)
 movie_containers = html_soup.find_all('div', class_ = 'lister-item mode-advanced')
-print(type(movie_containers))
 
+# Lists to store the scraped data in
+names = []
+years = []
+imdb_ratings = []
+metascores = []
+votes = []
 
-for div in soup.find_all('div', class_='prdbrief_name'):
-    productName.append(div.text)
-    #print(div.text)
+# Extract data from individual movie container
+for container in movie_containers:
+# If the movie has Metascore, then extract:
+    if container.find('div', class_ = 'ratings-metascore') is not None:
+    # The name
+        name = container.h3.a.text
+        names.append(name)
+    # The year
+        year = container.h3.find('span', class_ = 'lister-item-year').text
+        years.append(year)
+    # The IMDB rating
+        imdb = float(container.strong.text)
+        imdb_ratings.append(imdb)
+    # The Metascore
+        m_score = container.find('span', class_ = 'metascore').text
+        metascores.append(int(m_score))
+    # The number of votes
+        vote = container.find('span', attrs = {'name':'nv'})['data-value']
+        votes.append(int(vote))
 
-for div in soup.find_all('div', class_='prdbrief_price'):
-    productPrice.append(div.text)
-    #print(div.text)
-
-
-test_df = pd.DataFrame({'product': productName, 'price': productPrice})
+test_df = pd.DataFrame({'movie': names,
+'year': years,
+'imdb': imdb_ratings,
+'metascore': metascores,
+'votes': votes
+})
 print(test_df.info())
-
-
-
-#print(tabulate(test_df, headers='keys', tablefmt='psql'))
