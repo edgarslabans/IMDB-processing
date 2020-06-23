@@ -52,3 +52,6 @@ test_df = pd.DataFrame({'movie': names,
 'votes': votes
 })
 print(test_df.info())
+
+# print the dataframe with tabulate plugin
+print(tabulate(test_df, headers='keys', tablefmt='psql'))
