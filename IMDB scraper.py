@@ -15,7 +15,6 @@ url = 'http://www.imdb.com/search/title?release_date=2017&sort=num_votes,desc&pa
 response = get(url)
 
 html_soup = BeautifulSoup(response.text, 'html.parser')
-type(html_soup)
 movie_containers = html_soup.find_all('div', class_ = 'lister-item mode-advanced')
 
 # Lists to store the scraped data in
@@ -55,3 +54,6 @@ print(test_df.info())
 
 # print the dataframe with tabulate plugin
 print(tabulate(test_df, headers='keys', tablefmt='psql'))
+
+
+test_df.to_csv (r'C:\Users\Zebiekste\Documents\Python_works\IMDB-processing\result.csv', index = False, header=True)
